@@ -14,13 +14,12 @@ public class AuditoriaHash {
 
 
     public void buscarEnDiccionario() {
-
         try {
             List<String> contrasenas = Files.readAllLines(Paths.get(rutaDiccionario));
             boolean encontrado = false;
 
             for (String contrasena : contrasenas) {
-                String hashContrasena = getPasswordHash(contrasena);
+                String hashContrasena = Hash.getPasswordHash(contrasena);
 
                 if (hashContrasena.equals(hashAdmin)) {
                     System.out.println("¡CONTRASEÑA ENCONTRADA! La clave es: " + contrasena);
@@ -28,26 +27,11 @@ public class AuditoriaHash {
                     break;
                 }
             }
-
             if (!encontrado) {
                 System.out.println("No se encontró la contraseña en el diccionario.");
             }
-
         } catch (IOException e) {
             System.err.println("Error leyendo el archivo: " + e.getMessage());
-        }
-    }
-
-    private static String getPasswordHash(String password) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            messageDigest.update(password.getBytes());
-            byte[] resumen = messageDigest.digest();
-
-            return HexFormat.of().formatHex(resumen);
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
         }
     }
 
