@@ -1,0 +1,62 @@
+package org.example;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class DecodificadorCesar {
+
+    private static final String ALFABETO = "abcdefghijklmnñopqrstuvwxyz";
+
+    public void descifrarAutomaticamente(String mensajeCifrado) {
+        String mensaje = mensajeCifrado.toLowerCase();
+
+        for (int clave = 0; clave < ALFABETO.length(); clave++) {
+
+            String candidato = descifrar(mensaje, clave);
+            String primeraPalabra = candidato.split(" ")[0];
+
+            if (esPalabraValida(primeraPalabra)) {
+                System.out.println("Mensaje Descifrado: " + candidato);
+                System.out.println("Clave: " + clave);
+                return;
+            }
+        }
+    }
+
+    private String descifrar(String mensaje, int clave) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (char caracter : mensaje.toCharArray()) {
+            int indice = ALFABETO.indexOf(caracter);
+
+            if (indice != -1) {
+                int nuevoIndice = (indice - clave);
+                if (nuevoIndice < 0) {
+                    nuevoIndice += ALFABETO.length();
+                }
+                stringBuilder.append(ALFABETO.charAt(nuevoIndice));
+            } else {
+                stringBuilder.append(caracter);
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    private boolean esPalabraValida(String palabra) {
+        try {
+            String url = "https://api.languagetool.org/v2/check?language=es&text=" + palabra;
+
+            HttpClient cliente = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
+
+            String json = cliente.send(request, HttpResponse.BodyHandlers.ofString()).body();
+
+            return !json.contains("misspelling");
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
